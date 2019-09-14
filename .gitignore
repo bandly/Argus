@@ -1,0 +1,12 @@
+.idea/
+weights/
+checkpoint/
+misc/
+/data/darknet_weights
+data/logs
+test_anytime.py
+/docs
+*.jpg
+*.txt
+*.mp4
+*.log
