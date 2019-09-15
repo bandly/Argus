@@ -1,12 +1,9 @@
 .idea/
-weights/
-checkpoint/
-misc/
-/data/darknet_weights
+data/weights_yolo/checkpoint/
 data/logs
-test_anytime.py
+data/weights_facenet
+data/weights_yolo
 /docs
 *.jpg
-*.txt
 *.mp4
 *.log
