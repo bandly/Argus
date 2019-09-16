@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 import cv2
 import random
+from PIL import Image, ImageDraw, ImageFont
 
 
 def letterbox_resize(img, new_width, new_height, interp=0):
@@ -118,6 +119,25 @@ def get_color_table(class_num, seed=2):
     return color_table
 
 
+def paint_chinese_opencv(cv2img, chinese_label, position,  color, fontsize=10):
+    """
+    cv2 img转PIL输出中文
+    :param cv2img:
+    :param chinese_label:
+    :param position:
+    :param color:
+    :param fontsize:
+    :return:
+    """
+    pilimg = Image.fromarray(cv2img)
+    draw = ImageDraw.Draw(pilimg)
+    font = ImageFont.truetype("simhei.ttf", fontsize, encoding="utf-8")
+    font.getsize()
+    draw.text(position, chinese_label, fill=color, font=font)
+    cv2img = cv2.cvtColor(np.array(pilimg), cv2.COLOR_RGB2BGR)
+    return cv2img
+
+
 def plot_one_box(img, coord, label=None, color=None, line_thickness=None):
     """
     画出bbox方法
@@ -137,4 +157,7 @@ def plot_one_box(img, coord, label=None, color=None, line_thickness=None):
         t_size = cv2.getTextSize(label, 0, fontScale=float(tl) / 3, thickness=tf)[0]
         c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
         cv2.rectangle(img, c1, c2, color, -1)  # filled
-        cv2.putText(img, label, (c1[0], c1[1] - 2), 0, float(tl) / 3, [0, 0, 0], thickness=tf, lineType=cv2.LINE_AA)
+        cv2img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = paint_chinese_opencv(cv2img, label, (c1[0], c1[1] - 10), (255, 255, 255))
+        # cv2.putText(img, label, (c1[0], c1[1] - 2), 0, float(tl) / 3, [0, 0, 0], thickness=tf, lineType=cv2.LINE_AA)
+        return img

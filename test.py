@@ -84,6 +84,10 @@ def face_svm_distinguish(facenet, img_ori, boxes_):
     :param boxes_:
     :return:
     """
+    # 姓名映射
+    fr = open(facenet_args.map_path, 'r', encoding='utf-8')
+    name_list = fr.readline().rstrip().split()
+    # 加载svm
     clf = joblib.load(facenet_args.svm_path)
     sub_img = []
     for i in range(len(boxes_)):
@@ -93,8 +97,12 @@ def face_svm_distinguish(facenet, img_ori, boxes_):
         sub_img.append(cropped)
     img_arr = np.stack(tuple(sub_img))
     vectors = facenet.img_to_vetor128(img_arr)  # 得到所有的128维向量
+    for i in range(vectors.shape[0]):
+        print(clf.predict([vectors[i]]))
     labels = clf.predict(vectors)
-    return labels
+    print("labels1111:", labels)
+    name_labels = [name_list[i] for i in labels]
+    return name_labels
 
 
 def img_detect(input_args):
@@ -133,19 +141,20 @@ def img_detect(input_args):
     print('labels:', labels_)
 
     labels = face_svm_distinguish(facenet, img_ori, boxes_)
+    print(labels)
     # 遍历每一个bbox
     for i in range(len(boxes_)):
         x0, y0, x1, y1 = boxes_[i]
 
         if labels is not '':
-            plot_one_box(
+            img_ori = plot_one_box(
                 img_ori, [x0, y0, x1, y1],
                 label=labels[i],
                 color=pred_args.color_table[labels_[i]]
             )
     cv2.imshow('Detection result', img_ori)
-    cv2.imwrite(pred_args.output_image, img_ori)
     cv2.waitKey(0)
+    cv2.imwrite(pred_args.output_image, img_ori)
     sess.close()
 
 

@@ -4,7 +4,7 @@ import os
 import cv2
 import numpy as np
 import pandas as pd
-from sklearn import svm
+from sklearn.svm import SVC
 from sklearn.externals import joblib
 from net.facenet_model import FaceNet
 import setting.facenet_args as facenet_args
@@ -61,9 +61,13 @@ def train_face_svm():
     names = data.pop('name')
     x = data.values
     y = names.values
-    clf = svm.SVC()
+    clf = SVC(probability=True)
     clf.fit(x, y)
-    joblib.dump(clf, '../' + facenet_args.svm_path)
+    for i in range(data.shape[0]):
+        vec = np.array(data.iloc[i])
+        print(clf.predict_proba([vec]))
+        print(np.argmax(clf.predict_proba([vec]), axis=1))
+    # joblib.dump(clf, '../' + facenet_args.svm_path)
 
 
 def watch_csv_file():
@@ -72,7 +76,17 @@ def watch_csv_file():
     print(data)
 
 
+def test_svm():
+    data = pd.read_csv('../' + facenet_args.base_face_csv, index_col=0)
+    data.pop('name')
+    clf = joblib.load('../' + facenet_args.svm_path)
+    for i in range(data.shape[0]):
+        vec = np.array(data.iloc[i])
+        print(clf.predict([vec]))
+
+
 if __name__ == '__main__':
-    save_vector_csv()
+    # save_vector_csv()
     # watch_csv_file()
-    # train_face_svm()
+    train_face_svm()
+    # test_svm()
