@@ -4,7 +4,7 @@ import tensorflow as tf
 
 
 """
-神经网络模块
+yolo网络络模块
 """
 
 slim = tf.contrib.slim

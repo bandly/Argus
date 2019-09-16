@@ -6,9 +6,9 @@ import cv2
 import time
 import tensorflow as tf
 import numpy as np
-import setting.predict_args as pred_args
+import setting.yolo_args as pred_args
 from utils.yolo_utils import gpu_nms, plot_one_box, letterbox_resize
-from net.model import yolov3
+from net.yolo_model import yolov3
 
 
 def img_detect(input_args):
@@ -29,25 +29,25 @@ def img_detect(input_args):
     img = np.asarray(img, np.float32)
     img = img[np.newaxis, :] / 255.
 
-    sess = tf.Session()
+    with tf.Graph().as_default():
+        sess = tf.Session()
+        input_data = tf.placeholder(
+            tf.float32, [1, pred_args.new_size[1], pred_args.new_size[0], 3], name='input_data'
+        )
+        with tf.variable_scope('yolov3'):
+            yolo_model = yolov3(pred_args.num_class, pred_args.anchors)
+            pred_feature_maps = yolo_model.forward(input_data, False)
 
-    input_data = tf.placeholder(
-        tf.float32, [1, pred_args.new_size[1], pred_args.new_size[0], 3], name='input_data'
-    )
-    with tf.variable_scope('yolov3'):
-        yolo_model = yolov3(pred_args.num_class, pred_args.anchors)
-        pred_feature_maps = yolo_model.forward(input_data, False)
+        pred_boxes, pred_confs, pred_probs = yolo_model.predict(pred_feature_maps)
+        pred_scores = pred_confs * pred_probs
+        boxes, scores, labels = gpu_nms(
+            pred_boxes, pred_scores, pred_args.num_class,
+            max_boxes=200, score_thresh=0.3, nms_thresh=0.45)
 
-    pred_boxes, pred_confs, pred_probs = yolo_model.predict(pred_feature_maps)
-    pred_scores = pred_confs * pred_probs
-    boxes, scores, labels = gpu_nms(
-        pred_boxes, pred_scores, pred_args.num_class,
-        max_boxes=200, score_thresh=0.3, nms_thresh=0.45)
+        saver = tf.train.Saver()
+        saver.restore(sess, pred_args.weight_path)
 
-    saver = tf.train.Saver()
-    saver.restore(sess, pred_args.weight_path)
-
-    boxes_, scores_, labels_ = sess.run([boxes, scores, labels], feed_dict={input_data: img})
+        boxes_, scores_, labels_ = sess.run([boxes, scores, labels], feed_dict={input_data: img})
 
     # 还原坐标到原图
     if input_args.use_letterbox_resize:
@@ -65,7 +65,7 @@ def img_detect(input_args):
         x0, y0, x1, y1 = boxes_[i]
         plot_one_box(
             img_ori, [x0, y0, x1, y1],
-            label=pred_args.classes[labels_[i]] + ', {:.2f}%'.format(scores_[i] * 100),
+            # label=pred_args.classes[labels_[i]] + ', {:.2f}%'.format(scores_[i] * 100),
             color=pred_args.color_table[labels_[i]]
         )
     cv2.imshow('Detection result', img_ori)

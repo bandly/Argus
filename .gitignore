@@ -1,9 +1,8 @@
 .idea/
 data/weights_yolo/checkpoint/
-data/logs
 data/weights_facenet
 data/weights_yolo
+data/test_img
 /docs
-*.jpg
 *.mp4
 *.log
