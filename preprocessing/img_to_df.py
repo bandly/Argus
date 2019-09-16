@@ -53,6 +53,10 @@ def save_vector_csv():
 
 
 def train_face_svm():
+    """
+    根据储存的128维向量训练一个svm分类器
+    :return:
+    """
     data = pd.read_csv('../' + facenet_args.base_face_csv, index_col=0)
     names = data.pop('name')
     x = data.values
@@ -70,4 +74,5 @@ def watch_csv_file():
 
 if __name__ == '__main__':
     # save_vector_csv()
-    watch_csv_file()
+    # watch_csv_file()
+    train_face_svm()

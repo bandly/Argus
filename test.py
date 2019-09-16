@@ -4,9 +4,10 @@ from __future__ import division, print_function
 import argparse
 import cv2
 import time
-import tensorflow as tf
 import numpy as np
 import pandas as pd
+from sklearn.externals import joblib
+import tensorflow as tf
 import setting.yolo_args as pred_args
 import setting.facenet_args as facenet_args
 from utils.yolo_utils import gpu_nms, plot_one_box, letterbox_resize
@@ -50,7 +51,7 @@ def build_facenet():
 
 def face_distinguish(facenet, img_ori, boxes_):
     """
-    辨别
+    简单使用距离辨别人脸
     :param facenet:
     :param img_ori:
     :param boxes_:
@@ -70,12 +71,33 @@ def face_distinguish(facenet, img_ori, boxes_):
     for i in range(len(vectors)):
         names = base_face_vec.pop('name')
         dis = np.sqrt(np.square(np.subtract(vectors[i], base_face_vec.values)))
-        idx = np.argmin(dis)
+        idx = np.argmin(np.sum(dis, axis=1))
         dis_dic[i] = names[idx]
     return dis_dic
 
 
-def img_detect2(input_args):
+def face_svm_distinguish(facenet, img_ori, boxes_):
+    """
+    使用svm辨别人脸
+    :param facenet:
+    :param img_ori:
+    :param boxes_:
+    :return:
+    """
+    clf = joblib.load(facenet_args.svm_path)
+    sub_img = []
+    for i in range(len(boxes_)):
+        x0, y0, x1, y1 = boxes_[i]
+        cropped = img_ori[int(y0):int(y1), int(x0):int(x1)]  # 裁剪图片
+        cropped = cv2.resize(cropped, (160, 160))
+        sub_img.append(cropped)
+    img_arr = np.stack(tuple(sub_img))
+    vectors = facenet.img_to_vetor128(img_arr)  # 得到所有的128维向量
+    labels = clf.predict(vectors)
+    return labels
+
+
+def img_detect(input_args):
     """
     人脸辨别
     :param input_args:
@@ -85,7 +107,7 @@ def img_detect2(input_args):
     facenet = build_facenet()
 
     img_ori = cv2.imread(input_args.input_image)  # opencv 载入
-    if input_args.use_letterbox_resize:
+    if pred_args.use_letterbox_resize:
         img, resize_ratio, dw, dh = letterbox_resize(img_ori, pred_args.new_size[0], pred_args.new_size[1])
     else:
         height_ori, width_ori = img_ori.shape[:2]
@@ -99,7 +121,7 @@ def img_detect2(input_args):
     boxes_, scores_, labels_ = sess.run([boxes, scores, labels], feed_dict={input_data: img})
 
     # 还原坐标到原图
-    if input_args.use_letterbox_resize:
+    if pred_args.use_letterbox_resize:
         boxes_[:, [0, 2]] = (boxes_[:, [0, 2]] - dw) / resize_ratio
         boxes_[:, [1, 3]] = (boxes_[:, [1, 3]] - dh) / resize_ratio
     else:
@@ -110,7 +132,7 @@ def img_detect2(input_args):
     print('scores:', scores_, '\n' + '*' * 30)
     print('labels:', labels_)
 
-    labels = face_distinguish(facenet, img_ori, boxes_)
+    labels = face_svm_distinguish(facenet, img_ori, boxes_)
     # 遍历每一个bbox
     for i in range(len(boxes_)):
         x0, y0, x1, y1 = boxes_[i]
@@ -121,52 +143,6 @@ def img_detect2(input_args):
                 label=labels[i],
                 color=pred_args.color_table[labels_[i]]
             )
-    cv2.imshow('Detection result', img_ori)
-    cv2.imwrite(pred_args.output_image, img_ori)
-    cv2.waitKey(0)
-    sess.close()
-
-
-def img_detect(input_args):
-    """
-    图片检测
-    :param input_args:
-    :return:
-    """
-    sess, input_data, boxes, scores, labels = build_yolo()
-    img_ori = cv2.imread(input_args.input_image)  # opencv 打开
-    if input_args.use_letterbox_resize:
-        img, resize_ratio, dw, dh = letterbox_resize(img_ori, pred_args.new_size[0], pred_args.new_size[1])
-    else:
-        height_ori, width_ori = img_ori.shape[:2]
-        img = cv2.resize(img_ori, tuple(pred_args.new_size))
-
-    # img 转RGB, 转float, 归一化
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = np.asarray(img, np.float32)
-    img = img[np.newaxis, :] / 255.
-
-    boxes_, scores_, labels_ = sess.run([boxes, scores, labels], feed_dict={input_data: img})
-
-    # 还原坐标到原图
-    if input_args.use_letterbox_resize:
-        boxes_[:, [0, 2]] = (boxes_[:, [0, 2]] - dw) / resize_ratio
-        boxes_[:, [1, 3]] = (boxes_[:, [1, 3]] - dh) / resize_ratio
-    else:
-        boxes_[:, [0, 2]] *= (width_ori / float(pred_args.new_size[0]))
-        boxes_[:, [1, 3]] *= (height_ori / float(pred_args.new_size[1]))
-
-    print('box coords:', boxes_, '\n' + '*' * 30)
-    print('scores:', scores_, '\n' + '*' * 30)
-    print('labels:', labels_)
-
-    for i in range(len(boxes_)):
-        x0, y0, x1, y1 = boxes_[i]
-        plot_one_box(
-            img_ori, [x0, y0, x1, y1],
-            # label=pred_args.classes[labels_[i]] + ', {:.2f}%'.format(scores_[i] * 100),
-            color=pred_args.color_table[labels_[i]]
-        )
     cv2.imshow('Detection result', img_ori)
     cv2.imwrite(pred_args.output_image, img_ori)
     cv2.waitKey(0)
@@ -186,7 +162,7 @@ def video_detect(input_args):
 
     for i in range(video_frame_cnt):
         ret, img_ori = vid.read()
-        if input_args.use_letterbox_resize:
+        if pred_args.use_letterbox_resize:
             img, resize_ratio, dw, dh = letterbox_resize(img_ori, pred_args.new_size[0], pred_args.new_size[1])
         else:
             height_ori, width_ori = img_ori.shape[:2]
@@ -199,7 +175,7 @@ def video_detect(input_args):
         boxes_, scores_, labels_ = sess.run([boxes, scores, labels], feed_dict={input_data: img})
         end_time = time.time()
 
-        if input_args.use_letterbox_resize:
+        if pred_args.use_letterbox_resize:
             boxes_[:, [0, 2]] = (boxes_[:, [0, 2]] - dw) / resize_ratio
             boxes_[:, [1, 3]] = (boxes_[:, [1, 3]] - dh) / resize_ratio
         else:
@@ -229,7 +205,6 @@ def main():
     parser.add_argument('--detect_object', default=pred_args.detect_object, type=str, help='检测目标-img或video')
     parser.add_argument('--input_image', default=pred_args.input_image, type=str, help='图片路径')
     parser.add_argument('--input_video', default=pred_args.input_video, type=str, help='视频路径')
-    parser.add_argument('--use_letterbox_resize', type=lambda x: (str(x).lower() == 'true'), default=True, help='是否使用letterbox')
 
     input_args = parser.parse_args()
     # 图片检测
@@ -237,7 +212,7 @@ def main():
         img_origin = cv2.imread(input_args.input_image)  # 原始图片
         if img_origin is None:
             raise Exception('未找到图片文件！')
-        img_detect2(input_args)
+        img_detect(input_args)
 
     # 视频检测
     elif input_args.detect_object == 'video':
