@@ -2,6 +2,7 @@
 data/weights_yolo/checkpoint/
 data/weights_facenet
 data/weights_yolo
+data/weights_svm
 data/test_img
 /docs
 *.mp4

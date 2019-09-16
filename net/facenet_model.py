@@ -8,7 +8,9 @@ class FaceNet:
     """
     facenet
     """
-    def __init__(self):
+    def __init__(self, meta_path, ckpt_path):
+        self.meta_path = meta_path
+        self.ckpt_path = ckpt_path
         self.sess = tf.Session()
         self.__build_net()
 
@@ -20,10 +22,10 @@ class FaceNet:
         start_time = time.time()
         # 加载模型
         print('\033[32mBegin importing meta graph..\033[0m')
-        saver = tf.train.import_meta_graph(facenet_args.meta_path)
+        saver = tf.train.import_meta_graph(self.meta_path)
         print('\033[32mFinish importing meta graph..\033[0m')
         print('\033[32mBegin resoring model..\033[0m')
-        saver.restore(self.sess, facenet_args.ckpt_path)
+        saver.restore(self.sess, self.ckpt_path)
         print('\033[32mFinish resoring model..\033[0m')
         # 获得输入输出tensors
         self.images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
