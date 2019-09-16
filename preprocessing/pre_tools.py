@@ -73,6 +73,6 @@ def watch_csv_file():
 
 
 if __name__ == '__main__':
-    # save_vector_csv()
+    save_vector_csv()
     # watch_csv_file()
-    train_face_svm()
+    # train_face_svm()
