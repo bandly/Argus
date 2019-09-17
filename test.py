@@ -4,9 +4,9 @@ from __future__ import division, print_function
 import argparse
 import cv2
 import time
+import pickle
 import numpy as np
 import pandas as pd
-from sklearn.externals import joblib
 import tensorflow as tf
 import setting.yolo_args as pred_args
 import setting.facenet_args as facenet_args
@@ -88,7 +88,8 @@ def face_svm_distinguish(facenet, img_ori, boxes_):
     fr = open(facenet_args.map_path, 'r', encoding='utf-8')
     name_list = fr.readline().rstrip().split()
     # 加载svm
-    clf = joblib.load(facenet_args.svm_path)
+    with open(facenet_args.svm_path, 'rb') as in_file:
+        (clf, scale_fit) = pickle.load(in_file)
     sub_img = []
     for i in range(len(boxes_)):
         x0, y0, x1, y1 = boxes_[i]
@@ -97,8 +98,8 @@ def face_svm_distinguish(facenet, img_ori, boxes_):
         sub_img.append(cropped)
     img_arr = np.stack(tuple(sub_img))
     vectors = facenet.img_to_vetor128(img_arr)  # 得到所有的128维向量
-    for i in range(vectors.shape[0]):
-        print(clf.predict([vectors[i]]))
+    # 标准化
+    vectors = scale_fit.transform(vectors)
     labels = clf.predict(vectors)
     print("labels1111:", labels)
     name_labels = [name_list[i] for i in labels]
@@ -141,7 +142,6 @@ def img_detect(input_args):
     print('labels:', labels_)
 
     labels = face_svm_distinguish(facenet, img_ori, boxes_)
-    print(labels)
     # 遍历每一个bbox
     for i in range(len(boxes_)):
         x0, y0, x1, y1 = boxes_[i]

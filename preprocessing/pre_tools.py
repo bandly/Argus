@@ -2,10 +2,12 @@
 
 import os
 import cv2
+import pickle
 import numpy as np
 import pandas as pd
 from sklearn.svm import SVC
 from sklearn.externals import joblib
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from net.facenet_model import FaceNet
 import setting.facenet_args as facenet_args
 
@@ -45,6 +47,10 @@ def convert_base_face_to_vector(facenet):
 
 
 def save_vector_csv():
+    """
+    将图片转为128维向量并储存到csv
+    :return:
+    """
     head = list(range(128))
     head.insert(0, 'name')
     facenet = FaceNet(meta_path, ckpt_path)
@@ -57,36 +63,56 @@ def train_face_svm():
     根据储存的128维向量训练一个svm分类器
     :return:
     """
+    # 读取存好的128维向量
     data = pd.read_csv('../' + facenet_args.base_face_csv, index_col=0)
     names = data.pop('name')
     x = data.values
+
+    # 标准化
+    scale = StandardScaler()
+    scale_fit = scale.fit(x)
+    x = scale_fit.transform(x)
     y = names.values
-    clf = SVC(probability=True)
+
+    # svm
+    clf = SVC(probability=True, kernel='linear')
     clf.fit(x, y)
-    for i in range(data.shape[0]):
-        vec = np.array(data.iloc[i])
-        print(clf.predict_proba([vec]))
-        print(np.argmax(clf.predict_proba([vec]), axis=1))
+
+    # 储存模型和归一化参数书
     # joblib.dump(clf, '../' + facenet_args.svm_path)
-
-
-def watch_csv_file():
-    data = pd.read_csv('../' + facenet_args.base_face_csv, index_col=0)
-    names = data.pop('name')
-    print(data)
+    with open('../' + facenet_args.svm_path, 'wb') as outfile:
+        pickle.dump((clf, scale_fit), outfile)
 
 
 def test_svm():
+    """
+
+    :return:
+    """
     data = pd.read_csv('../' + facenet_args.base_face_csv, index_col=0)
     data.pop('name')
-    clf = joblib.load('../' + facenet_args.svm_path)
+    # clf2 = joblib.load('../' + facenet_args.svm_path)
+    with open('../' + facenet_args.svm_path, 'rb') as in_file:
+        (clf2, scale_fit) = pickle.load(in_file)
+    # 测试读取后的Model
     for i in range(data.shape[0]):
         vec = np.array(data.iloc[i])
-        print(clf.predict([vec]))
+        vec_2d = scale_fit.transform([vec])
+        # print(clf.predict([vec]))
+        predictions = clf2.predict_proba(vec_2d)
+        print(predictions)
+        best_class_indices = np.argmax(predictions, axis=1)
+        print(best_class_indices)
+        best_class_probabilities = predictions[np.arange(len(best_class_indices)), best_class_indices]
+        print(best_class_probabilities)
 
 
 if __name__ == '__main__':
-    # save_vector_csv()
-    # watch_csv_file()
+    # 将图片转为128为向量并储存
+    save_vector_csv()
+
+    # 用储存的向量训练一个svm分类器
     train_face_svm()
-    # test_svm()
+
+    # 测试
+    test_svm()
