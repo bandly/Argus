@@ -53,6 +53,17 @@ def read_class_names(class_name_path):
     return names
 
 
+def read_person_list(map_path):
+    """
+    读取map映射文件
+    :param map_path:
+    :return:
+    """
+    fr = open(map_path, 'r', encoding='utf-8')
+    name_list = fr.readline().rstrip().split()
+    return name_list
+
+
 def gpu_nms(boxes, scores, num_classes, max_boxes=50, score_thresh=0.5, nms_thresh=0.5):
     """
     非极大值抑制(tensorflow+gpu)
@@ -119,11 +130,12 @@ def get_color_table(class_num, seed=2):
     return color_table
 
 
-def paint_chinese_opencv(cv2img, chinese_label, position,  color, fontsize=10):
+def paint_chinese_opencv(cv2img, chinese_label, font, position,  color, fontsize=20):
     """
     cv2 img转PIL输出中文
     :param cv2img:
     :param chinese_label:
+    :param font:
     :param position:
     :param color:
     :param fontsize:
@@ -131,8 +143,6 @@ def paint_chinese_opencv(cv2img, chinese_label, position,  color, fontsize=10):
     """
     pilimg = Image.fromarray(cv2img)
     draw = ImageDraw.Draw(pilimg)
-    font = ImageFont.truetype("simhei.ttf", fontsize, encoding="utf-8")
-    # font.getsize()
     draw.text(position, chinese_label, fill=color, font=font)
     cv2img = cv2.cvtColor(np.array(pilimg), cv2.COLOR_RGB2BGR)
     return cv2img
@@ -148,16 +158,18 @@ def plot_one_box(img, coord, label=None, color=None, line_thickness=None):
     :param line_thickness: int. 框厚度.
     :return:
     """
-    tl = line_thickness or int(round(0.002 * max(img.shape[0:2])))  # line thickness
+    tl = line_thickness or int(round(0.003 * max(img.shape[0:2])))  # line thickness
     color = color or [random.randint(0, 255) for _ in range(3)]
     c1, c2 = (int(coord[0]), int(coord[1])), (int(coord[2]), int(coord[3]))
     cv2.rectangle(img, c1, c2, color, thickness=tl)
     if label:
-        tf = max(tl - 1, 1)  # font thickness
-        t_size = cv2.getTextSize(label, 0, fontScale=float(tl) / 3, thickness=tf)[0]
-        c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
+        font_size = img.shape[1] // 27
+        print("font_size:", font_size)
+        font = ImageFont.truetype("simhei.ttf", font_size, encoding="utf-8")
+        label_size = font.getsize(label)
+        c2 = c1[0] + label_size[0], c1[1] + label_size[1] + 3
         cv2.rectangle(img, c1, c2, color, -1)  # filled
         cv2img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = paint_chinese_opencv(cv2img, label, (c1[0], c1[1] - 10), (255, 255, 255))
+        img = paint_chinese_opencv(cv2img, label, font, (c1[0], c1[1]), (255, 255, 255))
         # cv2.putText(img, label, (c1[0], c1[1] - 2), 0, float(tl) / 3, [0, 0, 0], thickness=tf, lineType=cv2.LINE_AA)
         return img

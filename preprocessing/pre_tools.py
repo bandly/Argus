@@ -6,17 +6,14 @@ import pickle
 import numpy as np
 import pandas as pd
 from sklearn.svm import SVC
-from sklearn.externals import joblib
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import StandardScaler
 from net.facenet_model import FaceNet
 import setting.facenet_args as facenet_args
+from root_path import project_dir
 
 """
 提取base face文件, 保存为128维向量的csv文件
 """
-
-meta_path = '../data/weights_facenet/model-20170512-110547.ckpt-250000.meta'
-ckpt_path = '../data/weights_facenet/model-20170512-110547.ckpt-250000'
 
 
 def convert_base_face_to_vector(facenet):
@@ -26,8 +23,8 @@ def convert_base_face_to_vector(facenet):
     :return:
     """
     vector_list = []
-    for dir in os.listdir('../' + facenet_args.base_face_dir):
-        real_dir = os.path.join('../' + facenet_args.base_face_dir, dir)  # 单人的文件夹
+    for dir in os.listdir(facenet_args.base_face_dir):
+        real_dir = os.path.join(facenet_args.base_face_dir, dir)  # 单人的文件夹
         if os.path.isdir(real_dir):
             tag = dir  # 人名
             img_list = []
@@ -53,9 +50,9 @@ def save_vector_csv():
     """
     head = list(range(128))
     head.insert(0, 'name')
-    facenet = FaceNet(meta_path, ckpt_path)
+    facenet = FaceNet()
     vector_df = convert_base_face_to_vector(facenet)
-    vector_df.to_csv('../' + facenet_args.base_face_csv, header=head)
+    vector_df.to_csv(facenet_args.base_face_csv, header=head)
 
 
 def train_face_svm():
@@ -64,7 +61,7 @@ def train_face_svm():
     :return:
     """
     # 读取存好的128维向量
-    data = pd.read_csv('../' + facenet_args.base_face_csv, index_col=0)
+    data = pd.read_csv(facenet_args.base_face_csv, index_col=0)
     names = data.pop('name')
     x = data.values
 
@@ -79,8 +76,8 @@ def train_face_svm():
     clf.fit(x, y)
 
     # 储存模型和归一化参数书
-    # joblib.dump(clf, '../' + facenet_args.svm_path)
-    with open('../' + facenet_args.svm_path, 'wb') as outfile:
+    # joblib.dump(clf, facenet_args.svm_path)
+    with open(facenet_args.svm_path, 'wb') as outfile:
         pickle.dump((clf, scale_fit), outfile)
 
 
@@ -89,10 +86,10 @@ def test_svm():
 
     :return:
     """
-    data = pd.read_csv('../' + facenet_args.base_face_csv, index_col=0)
+    data = pd.read_csv(facenet_args.base_face_csv, index_col=0)
     data.pop('name')
-    # clf2 = joblib.load('../' + facenet_args.svm_path)
-    with open('../' + facenet_args.svm_path, 'rb') as in_file:
+    # clf2 = joblib.load(facenet_args.svm_path)
+    with open(facenet_args.svm_path, 'rb') as in_file:
         (clf2, scale_fit) = pickle.load(in_file)
     # 测试读取后的Model
     for i in range(data.shape[0]):
@@ -109,10 +106,10 @@ def test_svm():
 
 if __name__ == '__main__':
     # 将图片转为128为向量并储存
-    # save_vector_csv()
+    save_vector_csv()
 
     # 用储存的向量训练一个svm分类器
-    # train_face_svm()
+    train_face_svm()
 
     # 测试
     test_svm()
