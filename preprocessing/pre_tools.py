@@ -48,7 +48,7 @@ def save_vector_csv():
     将图片转为128维向量并储存到csv
     :return:
     """
-    head = list(range(128))
+    head = list(range(512))
     head.insert(0, 'name')
     facenet = FaceNet()
     vector_df = convert_base_face_to_vector(facenet)

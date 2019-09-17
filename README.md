@@ -52,7 +52,7 @@ facenet权重
 
 1. model-20170512-110547，请到[这里](https://pan.baidu.com/share/init?surl=LLPIitZhXVI_V3ifZ10XNg)下载，密码**12mh**
 2. model-20180408-102900，请到[这里](https://pan.baidu.com/s/19Z5uG7LXvtGKSpfYREyBgA)下载，密码**k68q**
-3. model-20180402-114759，请到[这里](https://pan.baidu.com/share/init?surl=_GABHFZfM13K8Qy0a6EIEg)下载，密码**chxh**
+3. model-20180402-114759（**推荐**），请到[这里](https://pan.baidu.com/share/init?surl=_GABHFZfM13K8Qy0a6EIEg)下载，密码**chxh**
 
 
 ## 3.yolo v3
@@ -62,9 +62,9 @@ YOLO v3的详细预测和训练，可到本人另一个项目[YOLO_v3_tensorflow
 ## 4.踩的坑
 
 1. fine-tune yolo v3时使用的是wider face数据集，其中有两个标注框是宽度或高度为0的，错误标注，筛选的时候需要去除掉这两个标注框，否则nms会报除0的异常。
-
 2. 训练svm时，需要标准化，预测时需要用同参数标准化再预测，否则svm预测结果都相同。
-3. 每个人15张脸部图片，训练svm效果不好，可以增大样本量或者使用一些svm的tricks。
+3. 之前使用model-20170512-110547模型，输出128d向量，效果不好，换成model-20180402-114759模型，输出512d向量，效果有所提升。
+4. 每个人15张脸部图片，训练svm效果不好，可以增大样本量或者使用一些svm的tricks。
 
 # 三、使用方法
 
