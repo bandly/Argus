@@ -109,10 +109,10 @@ def test_svm():
 
 if __name__ == '__main__':
     # 将图片转为128为向量并储存
-    save_vector_csv()
+    # save_vector_csv()
 
     # 用储存的向量训练一个svm分类器
-    train_face_svm()
+    # train_face_svm()
 
     # 测试
     test_svm()

@@ -65,8 +65,8 @@ def face_distinguish(facenet, img_ori, boxes_):
         sub_img.append(cropped)
     img_arr = np.stack(tuple(sub_img))
     vectors = facenet.img_to_vetor128(img_arr)  # 得到所有的128维向量
-    base_face_vec = pd.read_csv(facenet_args.base_face_csv, index_col=0)
 
+    base_face_vec = pd.read_csv(facenet_args.base_face_csv, index_col=0)
     dis_dic = {}
     for i in range(len(vectors)):
         names = base_face_vec.pop('name')
@@ -101,6 +101,7 @@ def face_svm_distinguish(facenet, img_ori, boxes_):
     # 标准化
     vectors = scale_fit.transform(vectors)
     labels = clf.predict(vectors)
+    print("person labels", labels)
     name_labels = [name_list[i] for i in labels]
     return name_labels
 
@@ -151,9 +152,9 @@ def img_detect(input_args):
                 label=labels[i],
                 color=pred_args.color_table[labels_[i]]
             )
+    cv2.imwrite(pred_args.output_image, img_ori)
     cv2.imshow('Detection result', img_ori)
     cv2.waitKey(0)
-    cv2.imwrite(pred_args.output_image, img_ori)
     sess.close()
 
 
