@@ -130,7 +130,26 @@ def get_color_table(class_num, seed=2):
     return color_table
 
 
-def paint_chinese_opencv(cv2img, chinese_label, font, position,  color, fontsize=20):
+def get_font(box_width, label):
+    """
+    获取合适大小的font
+    :param box_width:
+    :param label:
+    :return:
+    """
+    half_box_w = box_width // 2
+    max_size = 20
+    min_size = 12
+    label_size = (0, 0)
+    while not label_size[0] <= max_size:
+        min_size += 1
+        font = ImageFont.truetype("simhei.ttf", min_size, encoding="utf-8")
+        label_size = font.getsize(label)
+        if label_size[0] >= half_box_w:
+            return font
+
+
+def paint_chinese_opencv(cv2img, chinese_label, font, position, color, fontsize=20):
     """
     cv2 img转PIL输出中文
     :param cv2img:
@@ -144,6 +163,7 @@ def paint_chinese_opencv(cv2img, chinese_label, font, position,  color, fontsize
     pilimg = Image.fromarray(cv2img)
     draw = ImageDraw.Draw(pilimg)
     draw.text(position, chinese_label, fill=color, font=font)
+
     cv2img = cv2.cvtColor(np.array(pilimg), cv2.COLOR_RGB2BGR)
     return cv2img
 
@@ -162,12 +182,14 @@ def plot_one_box(img, coord, label=None, color=None, line_thickness=None):
     color = color or [random.randint(0, 255) for _ in range(3)]
     c1, c2 = (int(coord[0]), int(coord[1])), (int(coord[2]), int(coord[3]))
     cv2.rectangle(img, c1, c2, color, thickness=tl)
-    if label:
-        font_size = img.shape[1] // 27
-        print("font_size:", font_size)
-        font = ImageFont.truetype("simhei.ttf", font_size, encoding="utf-8")
+    # 太小不写labels
+    if label and int(coord[2]) - int(coord[0]) > img.shape[1] // 20:
+        # font_size = int(coord[2] - coord[0]) // 27
+        # print("font_size:", font_size)
+        # font = ImageFont.truetype("simhei.ttf", font_size, encoding="utf-8")
+        font = get_font(int(coord[2] - coord[0]), label)
         label_size = font.getsize(label)
-        c2 = c1[0] + label_size[0], c1[1] + label_size[1] + 3
+        c2 = c1[0] + label_size[0], c1[1] - label_size[1] - 3
         cv2.rectangle(img, c1, c2, color, -1)  # filled
         cv2img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = paint_chinese_opencv(cv2img, label, font, (c1[0], c1[1]), (255, 255, 255))
