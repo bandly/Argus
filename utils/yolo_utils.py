@@ -132,7 +132,7 @@ def paint_chinese_opencv(cv2img, chinese_label, position,  color, fontsize=10):
     pilimg = Image.fromarray(cv2img)
     draw = ImageDraw.Draw(pilimg)
     font = ImageFont.truetype("simhei.ttf", fontsize, encoding="utf-8")
-    font.getsize()
+    # font.getsize()
     draw.text(position, chinese_label, fill=color, font=font)
     cv2img = cv2.cvtColor(np.array(pilimg), cv2.COLOR_RGB2BGR)
     return cv2img
