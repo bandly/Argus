@@ -10,7 +10,7 @@ import pandas as pd
 import tensorflow as tf
 import setting.yolo_args as pred_args
 import setting.facenet_args as facenet_args
-from utils.yolo_utils import gpu_nms, plot_one_box, letterbox_resize
+from utils.utils import gpu_nms, plot_one_box, letterbox_resize
 from net.yolo_model import yolov3
 from net.facenet_model import FaceNet
 
@@ -45,7 +45,7 @@ def build_facenet():
     构建facenet网络
     :return:
     """
-    facenet = FaceNet(facenet_args.meta_path, facenet_args.ckpt_path)
+    facenet = FaceNet()
     return facenet
 
 
@@ -84,9 +84,6 @@ def face_svm_distinguish(facenet, img_ori, boxes_):
     :param boxes_:
     :return:
     """
-    # 姓名映射
-    fr = open(facenet_args.map_path, 'r', encoding='utf-8')
-    name_list = fr.readline().rstrip().split()
     # 加载svm
     with open(facenet_args.svm_path, 'rb') as in_file:
         (clf, scale_fit) = pickle.load(in_file)
@@ -102,8 +99,8 @@ def face_svm_distinguish(facenet, img_ori, boxes_):
     vectors = scale_fit.transform(vectors)
     labels = clf.predict(vectors)
     print("person labels", labels)
-    name_labels = [name_list[i] for i in labels]
-    return name_labels
+    name_labels = [facenet_args.person_list[i] for i in labels]
+    return name_labels, labels
 
 
 def img_detect(input_args):
@@ -141,7 +138,7 @@ def img_detect(input_args):
     print('scores:', scores_, '\n' + '*' * 30)
     print('labels:', labels_)
 
-    labels = face_svm_distinguish(facenet, img_ori, boxes_)
+    labels, labels_idx = face_svm_distinguish(facenet, img_ori, boxes_)
     # 遍历每一个bbox
     for i in range(len(boxes_)):
         x0, y0, x1, y1 = boxes_[i]
@@ -150,7 +147,7 @@ def img_detect(input_args):
             img_ori = plot_one_box(
                 img_ori, [x0, y0, x1, y1],
                 label=labels[i],
-                color=pred_args.color_table[labels_[i]]
+                color=facenet_args.color_table[labels_idx[i]]
             )
     cv2.imwrite(pred_args.output_image, img_ori)
     cv2.imshow('Detection result', img_ori)
@@ -195,7 +192,7 @@ def video_detect(input_args):
         print('scores:', scores_, '\n' + '*' * 30)
         print('labels:', labels_)
 
-        labels = face_svm_distinguish(facenet, img_ori, boxes_)
+        labels, labels_idx = face_svm_distinguish(facenet, img_ori, boxes_)
         end_time = time.time()
 
         # 遍历每一个bbox
@@ -206,7 +203,7 @@ def video_detect(input_args):
                 img_ori = plot_one_box(
                     img_ori, [x0, y0, x1, y1],
                     label=labels[j],
-                    color=pred_args.color_table[labels_[j]]
+                    color=facenet_args.color_table[labels_idx[j]]
                 )
 
         cv2.putText(

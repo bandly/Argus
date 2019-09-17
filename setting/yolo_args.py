@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from utils.yolo_utils import parse_anchors, read_class_names, get_color_table
+from utils.utils import parse_anchors, read_class_names, get_color_table
 
 """
 检测配置
@@ -20,4 +20,3 @@ num_class = len(classes)  # 类别数量
 
 new_size = [416, 416]  # 图片改变后的大小
 use_letterbox_resize = True  # 是否使用letterbox
-color_table = get_color_table(num_class)  # 根据类别数生成颜色列表

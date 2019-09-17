@@ -8,9 +8,9 @@ class FaceNet:
     """
     facenet
     """
-    def __init__(self, meta_path, ckpt_path):
-        self.meta_path = meta_path
-        self.ckpt_path = ckpt_path
+    def __init__(self):
+        self.meta_path = facenet_args.meta_path
+        self.ckpt_path = facenet_args.ckpt_path
         self.sess = tf.Session()
         self.__build_net()
 
