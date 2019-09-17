@@ -64,7 +64,7 @@ def face_distinguish(facenet, img_ori, boxes_):
         cropped = cv2.resize(cropped, (160, 160))
         sub_img.append(cropped)
     img_arr = np.stack(tuple(sub_img))
-    vectors = facenet.img_to_vetor128(img_arr)  # 得到所有的128维向量
+    vectors = facenet.img_to_vetor(img_arr)  # 得到所有的128维向量
 
     base_face_vec = pd.read_csv(facenet_args.base_face_csv, index_col=0)
     dis_dic = {}
@@ -94,7 +94,7 @@ def face_svm_distinguish(facenet, img_ori, boxes_):
         cropped = cv2.resize(cropped, (160, 160))
         sub_img.append(cropped)
     img_arr = np.stack(tuple(sub_img))
-    vectors = facenet.img_to_vetor128(img_arr)  # 得到所有的128维向量
+    vectors = facenet.img_to_vetor(img_arr)  # 得到所有的128维向量
     # 标准化
     vectors = scale_fit.transform(vectors)
     labels = clf.predict(vectors)

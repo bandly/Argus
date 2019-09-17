@@ -140,13 +140,13 @@ def get_font(box_width, label):
     half_box_w = box_width // 2
     max_size = 20
     min_size = 12
-    label_size = (0, 0)
-    while not label_size[0] <= max_size:
+    while min_size <= max_size:
         min_size += 1
         font = ImageFont.truetype("simhei.ttf", min_size, encoding="utf-8")
         label_size = font.getsize(label)
         if label_size[0] >= half_box_w:
             return font
+    return font
 
 
 def paint_chinese_opencv(cv2img, chinese_label, font, position, color, fontsize=20):
@@ -183,7 +183,7 @@ def plot_one_box(img, coord, label=None, color=None, line_thickness=None):
     c1, c2 = (int(coord[0]), int(coord[1])), (int(coord[2]), int(coord[3]))
     cv2.rectangle(img, c1, c2, color, thickness=tl)
     # 太小不写labels
-    if label and int(coord[2]) - int(coord[0]) > img.shape[1] // 20:
+    if label and int(coord[2]) - int(coord[0]) > img.shape[1] // 40:
         # font_size = int(coord[2] - coord[0]) // 27
         # print("font_size:", font_size)
         # font = ImageFont.truetype("simhei.ttf", font_size, encoding="utf-8")
@@ -192,6 +192,6 @@ def plot_one_box(img, coord, label=None, color=None, line_thickness=None):
         c2 = c1[0] + label_size[0], c1[1] - label_size[1] - 3
         cv2.rectangle(img, c1, c2, color, -1)  # filled
         cv2img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = paint_chinese_opencv(cv2img, label, font, (c1[0], c1[1]), (255, 255, 255))
+        img = paint_chinese_opencv(cv2img, label, font, (c1[0], c1[1] - label_size[1]), (255, 255, 255))
         # cv2.putText(img, label, (c1[0], c1[1] - 2), 0, float(tl) / 3, [0, 0, 0], thickness=tf, lineType=cv2.LINE_AA)
-        return img
+    return img

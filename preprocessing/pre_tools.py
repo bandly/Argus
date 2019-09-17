@@ -35,7 +35,7 @@ def convert_base_face_to_vector(facenet):
                 img_list.append(img_160)
             img_arr = np.stack(tuple(img_list))  # 拼接图片arr, shape=?*160*160*3
 
-            vector = facenet.img_to_vetor128(img_arr)  # 某人所有图片的128维向量
+            vector = facenet.img_to_vetor(img_arr)  # 某人所有图片的128维向量
             for i in range(vector.shape[0]):
                 vec_list = vector[i].tolist()
                 vec_list.insert(0, tag)

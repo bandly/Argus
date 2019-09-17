@@ -34,18 +34,18 @@ class FaceNet:
         model_time = time.time()
         print('\033[32m加载模型时间为{}\033[0m'.format(str(model_time - start_time)))
 
-    def img_to_vetor128(self, images):
+    def img_to_vetor(self, images):
         """
         将图片转为128维向量
         :param images:
         :return:
         """
-        print('\033[32mBegin calculating 128 vector..\033[0m')
+        print('\033[32mBegin calculating img vector..\033[0m')
         start_time = time.time()
         # 前向传播计算embeddings
         emb = self.sess.run(
             self.embeddings,
             feed_dict={self.images_placeholder: images, self.phase_train_placeholder: False}
         )
-        print('\033[32mFinish calculating 128 vector, cost time {}..\033[0m'.format(str(time.time() - start_time)))
+        print('\033[32mFinish calculating img vector, cost time {}..\033[0m'.format(str(time.time() - start_time)))
         return emb
