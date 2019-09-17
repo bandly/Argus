@@ -78,7 +78,7 @@ pillow
 
 截取需要识别的人物的脸部图片，一人一个文件夹，文件夹名称从0开始依次累加，放在路径**data/base_face**下。
 
-![输入图片说明](https://images.gitee.com/uploads/images/2019/0917/111116_c32b51c9_1295352.png "face.png")
+![输入图片说明](https://images.gitee.com/uploads/images/2019/0917/111219_bbb5330d_1295352.png "face.png")
 
 ## 2.使用工具将图片转换成128维向量并存储
 
