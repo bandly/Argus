@@ -5,7 +5,7 @@
 
 fine-tune YOLO v3 + FaceNet进行人脸识别，辨别。
 
-![输入图片说明](https://images.gitee.com/uploads/images/2019/0917/164626_f345f279_1295352.png "result.png")
+![输入图片说明](https://images.gitee.com/uploads/images/2019/0917/164808_5e279300_1295352.png "result.png")
 
 ## 1. 项目结构
 
