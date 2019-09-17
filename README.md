@@ -48,7 +48,7 @@ fine-tune YOLO v3 + FaceNet进行人脸识别，辨别。
 
 ## 2.权重文件
 
-yolo v3是基于论文作者模型，在Wider Face数据上fine-tuning的，可以到[这里](https://github.com/YunYang1994/tensorflow-yolov3/releases/download/v1.0/yolov3_coco.tar.gz)下载
+yolo v3是基于论文作者模型，在Wider Face数据上fine-tuning的，可以到[这里](https://pan.baidu.com/s/1ifCaB2ASPQFPN1XGPGyplg)下载，密码**qli4**。
 
 facenet权重
 
