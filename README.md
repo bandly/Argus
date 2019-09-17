@@ -9,39 +9,39 @@ fine-tune YOLO v3 + FaceNet进行人脸识别，辨别。
 
 --data  
 
-​    |--baseface 图片、根据这些图片训练的128d向量，以及文件夹与人名的映射文件
+​      |--baseface 图片、根据这些图片训练的128d向量，以及文件夹与人名的映射文件
 
-​          |--0  第一个人的图片tag=0
+​              |--0  第一个人的图片tag=0
 
-​          |--1  第二个人的图片tag=1
+​              |--1  第二个人的图片tag=1
 
-​          ......
+​              ......
 
-​          |--n  第n个人的图片tag=n
+​              |--n  第n个人的图片tag=n
 
-​          |--map.txt  文件夹与人名的映射，依次放即可
+​              |--map.txt  文件夹与人名的映射，依次放即可
 
-​          |--vector.csv 根据这些图片得到的128维向量以及其类别（文件夹名）
+​              |--vector.csv 根据这些图片得到的128维向量以及其类别（文件夹名）
 
-​    |--weights_facenet     权重（facenet）
+​      |--weights_facenet     权重（facenet）
 
-​    |--weights_yolo  权重（fune-tuning的yolo v3）
+​      |--weights_yolo  权重（fune-tuning的yolo v3）
 
-​    |--weights_svm 模型（根据csv文件训练的svm模型）
+​      |--weights_svm 模型（根据csv文件训练的svm模型）
 
-​    |--face-names 预测类别，默认即可
+​      |--face-names 预测类别，默认即可
 
-​    |--yolo_anchors.txt  训练yolo v3时聚类得到的anchors框
+​      |--yolo_anchors.txt  训练yolo v3时聚类得到的anchors框
 
 --net  yolo和facenet的网络
 
--preprocessing  预处理工具，下文的使用方法前期步骤都需要在这里运行
+--preprocessing  预处理工具，下文的使用方法前期步骤都需要在这里运行
 
--setting  模型参数，可根据需要修改
+--setting  模型参数，可根据需要修改
 
--utils 封装的一些方法
+--utils 封装的一些方法
 
--test.py 主体方法
+--test.py 主体方法
 
 
 ## 2.权重文件
@@ -76,7 +76,7 @@ pillow
 
 ## 1.制作自己的人脸数据集
 
-截取需要识别的人物的脸部图片，一人一个文件夹，放在路径**data/base_face**下。
+截取需要识别的人物的脸部图片，一人一个文件夹，文件夹名称从0开始依次累加，放在路径**data/base_face**下。
 
 ## 2.使用工具将图片转换成128维向量并存储
 
