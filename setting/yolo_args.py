@@ -6,7 +6,7 @@ from utils.yolo_utils import parse_anchors, read_class_names, get_color_table
 """
 
 detect_object = 'img'  # 默认检测对象
-input_image = './data/test_img/m.jpg'  # 默认图片路径
+input_image = './data/test_img/face.jpg'  # 默认图片路径
 input_video = './data/test_video/video_demo.mp4'  # 默认视频路径
 output_image = './data/test_img/result/result.jpg'  # 保存图片路径
 output_video = './data/test_video/result/result.mp4'  # 保存视频路径

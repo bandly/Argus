@@ -101,7 +101,6 @@ def face_svm_distinguish(facenet, img_ori, boxes_):
     # 标准化
     vectors = scale_fit.transform(vectors)
     labels = clf.predict(vectors)
-    print("labels1111:", labels)
     name_labels = [name_list[i] for i in labels]
     return name_labels
 
@@ -160,6 +159,7 @@ def img_detect(input_args):
 
 def video_detect(input_args):
     sess, input_data, boxes, scores, labels = build_yolo()
+    facenet = build_facenet()
     vid = cv2.VideoCapture(input_args.input_video)
     video_frame_cnt = int(vid.get(7))
     video_width = int(vid.get(3))
@@ -182,8 +182,7 @@ def video_detect(input_args):
 
         start_time = time.time()
         boxes_, scores_, labels_ = sess.run([boxes, scores, labels], feed_dict={input_data: img})
-        end_time = time.time()
-
+        # 还原坐标到原图
         if pred_args.use_letterbox_resize:
             boxes_[:, [0, 2]] = (boxes_[:, [0, 2]] - dw) / resize_ratio
             boxes_[:, [1, 3]] = (boxes_[:, [1, 3]] - dh) / resize_ratio
@@ -191,11 +190,24 @@ def video_detect(input_args):
             boxes_[:, [0, 2]] *= (width_ori / float(pred_args.new_size[0]))
             boxes_[:, [1, 3]] *= (height_ori / float(pred_args.new_size[1]))
 
-        for i in range(len(boxes_)):
-            x0, y0, x1, y1 = boxes_[i]
-            plot_one_box(img_ori, [x0, y0, x1, y1],
-                         label=pred_args.classes[labels_[i]] + ', {:.2f}%'.format(scores_[i] * 100),
-                         color=pred_args.color_table[labels_[i]])
+        print('box coords:', boxes_, '\n' + '*' * 30)
+        print('scores:', scores_, '\n' + '*' * 30)
+        print('labels:', labels_)
+
+        labels = face_svm_distinguish(facenet, img_ori, boxes_)
+        end_time = time.time()
+
+        # 遍历每一个bbox
+        for j in range(len(boxes_)):
+            x0, y0, x1, y1 = boxes_[j]
+
+            if labels is not '':
+                img_ori = plot_one_box(
+                    img_ori, [x0, y0, x1, y1],
+                    label=labels[j],
+                    color=pred_args.color_table[labels_[j]]
+                )
+
         cv2.putText(
             img_ori, '{:.2f}ms'.format((end_time - start_time) * 1000),
             (40, 40), 0, fontScale=1, color=(0, 255, 0), thickness=2
