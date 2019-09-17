@@ -87,9 +87,9 @@ pillow
 
 ![输入图片说明](https://images.gitee.com/uploads/images/2019/0917/111219_bbb5330d_1295352.png "face.png")
 
-## 2.使用工具将图片转换成128维向量并存储
+## 2.使用工具将图片转换成向量并存储
 
-运行**preprecessing/pre_tools.py**内的**save_vector_csv()**，将图片使用facenet转换为128d向量，并存储为**data/base_face/vector.csv**中。
+运行**preprecessing/pre_tools.py**内的**save_vector_csv()**，将图片使用facenet转换为128d或512d向量，并存储为**data/base_face/vector.csv**中。
 
 ## 3.训练svm分类器
 
