@@ -78,6 +78,8 @@ pillow
 
 截取需要识别的人物的脸部图片，一人一个文件夹，文件夹名称从0开始依次累加，放在路径**data/base_face**下。
 
+![输入图片说明](https://images.gitee.com/uploads/images/2019/0917/111116_c32b51c9_1295352.png "face.png")
+
 ## 2.使用工具将图片转换成128维向量并存储
 
 运行**preprecessing/pre_tools.py**内的**save_vector_csv()**，将图片使用facenet转换为128d向量，并存储为**data/base_face/vector.csv**中。
