@@ -52,7 +52,7 @@ yolo v3是基于论文作者模型，在Wider Face数据上fine-tuning的，可�
 
 facenet权重
 
-1. model-20170512-110547，请到[这里](https://pan.baidu.com/s/1pGDUIODBZ2Rvrr1MTRl9ZQ)下载，密码**12mh**
+1. model-20170512-110547，请到[这里](https://pan.baidu.com/s/1pGDUIODBZ2Rvrr1MTRl9ZQ)下载，密码**9x2l**
 2. model-20180408-102900，请到[这里](https://pan.baidu.com/s/1xe2dTQsgaXf3xTmCfVprDQ)下载，密码**jjf1**
 3. model-20180402-114759（**推荐**），请到[这里](https://pan.baidu.com/s/1jkawg8u2rYLeLG0XF_3_Ug)下载，密码**u91l**
 
